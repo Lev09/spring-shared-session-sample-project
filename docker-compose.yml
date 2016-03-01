@@ -1,0 +1,33 @@
+redis:
+ image: redis
+ restart: always
+authserver:
+ build: authServer
+ links:
+  - redis
+ restart: always
+nodeapp:
+ build: nodeApp
+ links:
+  - redis
+ volumes:
+  - nodeApp/:/home/src:ro
+ restart: always
+phpapp:
+ build: phpApp
+ mem_limit: 200m
+ links:
+  - redis
+ volumes:
+  - phpApp/src:/var/www/html/
+ restart: always
+haproxy:
+ build: haproxy
+ links:
+  - authserver
+  - nodeapp
+  - phpapp
+ ports:
+  - "80:80"
+  - "443:443"
+ restart: always
